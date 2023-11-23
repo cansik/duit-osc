@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from functools import partial
-from typing import TypeVar, Generic, Optional, List, Any, Type
+from typing import TypeVar, Generic, Optional, List, Any, Type, Dict
 
 from duit.annotation.AnnotationFinder import AnnotationFinder
 from duit.model.DataField import DataField
@@ -16,17 +17,30 @@ from duit_osc.adapter.EnumOscAdapter import EnumOscAdapter
 T = TypeVar('T')
 
 
+@dataclass
+class OscRegistration:
+    address: str
+    field: DataField
+    annotation: OscEndpoint
+    silent: bool = False
+
+
 class OscService(Generic[T]):
     def __init__(self, host: str = "0.0.0.0",
                  in_port: Optional[int] = 8000,
                  out_port: Optional[int] = 9000,
-                 allow_broadcast: bool = True):
+                 allow_broadcast: bool = True,
+                 send_on_receive: bool = False):
         self.host = host
         self.in_port = in_port
         self.out_port = out_port
         self.allow_broadcast = allow_broadcast
 
+        self.send_on_receive = send_on_receive
+
         self.server_poll_interval: float = 0.01
+
+        self.endpoint_registry: Dict[str, OscRegistration] = dict()
 
         # osc internals
         self.osc_server: Optional[ThreadingOSCUDPServer] = None
@@ -62,11 +76,17 @@ class OscService(Generic[T]):
         if annotation.direction == OscDirection.Receive or annotation.direction == OscDirection.Both:
             self._add_receive_handler(address, field, annotation, adapter)
 
+        self.endpoint_registry[address] = OscRegistration(address, field, annotation)
+
     def _add_send_handler(self, address: str, field: DataField,
                           annotation: OscEndpoint, adapter: BaseOscMessageAdapter):
 
         def _send_handler(f: DataField, _: Any):
             if self.osc_client is None:
+                return
+
+            registration = self.endpoint_registry[address]
+            if registration.silent:
                 return
 
             msg = adapter.create_message(address, f.value)
@@ -80,7 +100,12 @@ class OscService(Generic[T]):
 
         def _receive_handler(f: DataField, t: Type, adr: str, *values: Any):
             data = adapter.parse_message(t, *values)
+
+            registration = self.endpoint_registry[address]
+            if not self.send_on_receive:
+                registration.silent = True
             f.value = data
+            registration.silent = False
 
         self.dispatcher.map(address, partial(_receive_handler, field, data_type))
 

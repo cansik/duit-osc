@@ -14,5 +14,7 @@ if __name__ == "__main__":
 
     client = udp_client.SimpleUDPClient(args.ip, args.port)
 
-    client.send_message("/config/age", int(100 * random.random()))
+    for i in range(5):
+        client.send_message("/config/age", int(100 * random.random()))
+        time.sleep(1)
 
