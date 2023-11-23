@@ -1,2 +1,2 @@
-# duit-osc
-Adds OSC communication to duit datafields.
+# OSC for Duit
+Open Sound Control communication for duit datafields.
