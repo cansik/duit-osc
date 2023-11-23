@@ -1,3 +1,4 @@
+import vector
 from duit import ui
 from duit.arguments.Argument import Argument
 from duit.model.DataField import DataField
@@ -17,6 +18,7 @@ class Config:
 
         with container_helper.section("Application"):
             self.enabled = DataField(True) | ui.Boolean("Enabled") | Argument()
+            self.direction = DataField(vector.obj(x=2, y=5)) | OscEndpoint("dir")
 
 
 def main():
@@ -25,7 +27,10 @@ def main():
 
     # register a custom listener for the enabled flag
     config.enabled.on_changed += lambda e: print(f"Enabled: {e}")
-    config.age.on_changed += lambda e: print(f"Age: {e}")
+
+    def on_age(v: int):
+        config.direction.fire()
+    config.age.on_changed += on_age
 
     # start server
     osc_server = OscService()

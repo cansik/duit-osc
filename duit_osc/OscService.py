@@ -13,6 +13,8 @@ from duit_osc.OscEndpoint import OscEndpoint
 from duit_osc.adapter.BaseOscMessageAdapter import BaseOscMessageAdapter
 from duit_osc.adapter.DefaultOscAdapter import DefaultOscAdapter
 from duit_osc.adapter.EnumOscAdapter import EnumOscAdapter
+from duit_osc.adapter.PathOscAdapter import PathOscAdapter
+from duit_osc.adapter.VectorOscAdapter import VectorOscAdapter
 
 T = TypeVar('T')
 
@@ -50,7 +52,9 @@ class OscService(Generic[T]):
         # serialization
         self.default_adapter: BaseOscMessageAdapter = DefaultOscAdapter()
         self.adapters: List[BaseOscMessageAdapter] = [
-            EnumOscAdapter()
+            EnumOscAdapter(),
+            PathOscAdapter(),
+            VectorOscAdapter()
         ]
 
     def add_route(self, name: str, model: T):

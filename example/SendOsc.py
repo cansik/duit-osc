@@ -16,5 +16,7 @@ if __name__ == "__main__":
 
     for i in range(5):
         client.send_message("/config/age", int(100 * random.random()))
-        time.sleep(1)
+        time.sleep(0.5)
+        client.send_message("/config/dir", (float(100 * random.random()), float(100 * random.random())))
+        time.sleep(0.5)
 
