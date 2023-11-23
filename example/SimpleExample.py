@@ -29,12 +29,16 @@ def main():
     config.enabled.on_changed += lambda e: print(f"Enabled: {e}")
 
     def on_age(v: int):
+        print(f"Age: {v}")
         config.direction.fire()
+
     config.age.on_changed += on_age
 
     # start server
     osc_server = OscService()
     osc_server.add_route("/config", config)
+
+    print(osc_server.api_description())
 
     print("running")
     osc_server.run()

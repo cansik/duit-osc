@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from functools import partial
 from typing import TypeVar, Generic, Optional, List, Any, Type, Dict
@@ -25,6 +26,12 @@ class OscRegistration:
     field: DataField
     annotation: OscEndpoint
     silent: bool = False
+
+    def __str__(self) -> str:
+        return f"{self.address} ({self.annotation.direction.name}): {type(self.field.value).__name__}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class OscService(Generic[T]):
@@ -126,6 +133,11 @@ class OscService(Generic[T]):
     def stop(self):
         if self.osc_server is not None:
             self.osc_server.shutdown()
+
+    def api_description(self) -> str:
+        logging.warning("This method (api_description) is not meant for production and will change in future releases.")
+        text = "\n".join([str(r) for r in self.endpoint_registry.values()])
+        return text
 
     def _get_matching_adapter(self, field: DataField) -> BaseOscMessageAdapter:
         for adapter in self.adapters:
