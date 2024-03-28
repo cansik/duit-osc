@@ -35,7 +35,8 @@ class OscRegistration:
 
 
 class OscService(Generic[T]):
-    def __init__(self, host: str = "0.0.0.0",
+    def __init__(self,
+                 host: str = "0.0.0.0",
                  in_port: Optional[int] = 8000,
                  out_port: Optional[int] = 9000,
                  allow_broadcast: bool = True,
@@ -81,10 +82,10 @@ class OscService(Generic[T]):
     def add_datafield_endpoint(self, address: str, field: DataField, annotation: OscEndpoint):
         adapter = self._get_matching_adapter(field)
 
-        if annotation.direction == OscDirection.Send or annotation.direction == OscDirection.Both:
+        if annotation.direction == OscDirection.Send or annotation.direction == OscDirection.Bidirectional:
             self._add_send_handler(address, field, annotation, adapter)
 
-        if annotation.direction == OscDirection.Receive or annotation.direction == OscDirection.Both:
+        if annotation.direction == OscDirection.Receive or annotation.direction == OscDirection.Bidirectional:
             self._add_receive_handler(address, field, annotation, adapter)
 
         self.endpoint_registry[address] = OscRegistration(address, field, annotation)

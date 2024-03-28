@@ -11,7 +11,7 @@ M = TypeVar("M", bound=DataField)
 
 class OscEndpoint(Annotation):
 
-    def __init__(self, name: Optional[str] = None, direction: OscDirection = OscDirection.Both):
+    def __init__(self, name: Optional[str] = None, direction: OscDirection = OscDirection.Bidirectional):
         self.name = name
         self.direction = direction
 
