@@ -20,6 +20,8 @@ class Config:
             self.enabled = DataField(True) | ui.Boolean("Enabled") | Argument()
             self.direction = DataField(vector.obj(x=2, y=5)) | OscEndpoint("dir")
 
+            self.run_algorithm = DataField(lambda: print("hello world from algo")) | OscEndpoint()
+
 
 def main():
     # create initial config

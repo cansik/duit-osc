@@ -4,7 +4,7 @@ from typing import List
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = "duit-osc"
-PACKAGE_VERSION = "0.2.0"
+PACKAGE_VERSION = "0.3.0"
 PACKAGE_URL = "https://github.com/cansik/duit-osc"
 
 PACKAGE_DOC_MODULES = ["duit_osc"]

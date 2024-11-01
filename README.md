@@ -92,11 +92,18 @@ osc_service.add_route("/config", config)
 
 Each `DataField` is added under this route, so for example the `name` field would get the OSC address `/config/name`.
 
+#### Receiving Data and Events
+On receiving an address that corresponds to a DataField, the arguments of the message are passed as the value to DataField. If no arguments are passed, the `on_change` event of the DataField is fired, or if it's value is a `method`, the method is called.
+
 #### Start
-To start the service, it is necessary to call `run()`. This is a blocking method, which does not return until the service is shutdown. If it should run as a background thread, use the `blocking` parameter:
+To start the service, it is necessary to call `run()`. This is a blocking method, which does not return until the service is shutdown. If it should run as a background thread, use the `run_async()` method:
 
 ```python
-osc_service.run(blocking=False)
+# run blocking
+osc_service.run()
+
+# run in seperate thread
+osc_service.run_async()
 ```
 
 #### API Description

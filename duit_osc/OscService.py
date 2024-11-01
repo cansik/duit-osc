@@ -1,6 +1,7 @@
 import logging
 from dataclasses import dataclass
 from functools import partial
+from threading import Thread
 from typing import TypeVar, Generic, Optional, List, Any, Type, Dict
 
 from duit.annotation.AnnotationFinder import AnnotationFinder
@@ -56,6 +57,7 @@ class OscService(Generic[T]):
         self.osc_server: Optional[ThreadingOSCUDPServer] = None
         self.osc_client: Optional[SimpleUDPClient] = None
         self.dispatcher = Dispatcher()
+        self.osc_run_thread: Optional[Thread] = None
 
         # serialization
         self.default_adapter: BaseOscMessageAdapter = DefaultOscAdapter()
@@ -111,6 +113,15 @@ class OscService(Generic[T]):
         data_type = type(field.value)
 
         def _receive_handler(f: DataField, t: Type, adr: str, *values: Any):
+            # check if it is only a trigger-message
+            if len(values) == 0:
+                # just fire event or function
+                if callable(f.value):
+                    f.value()
+                else:
+                    f.fire()
+                return
+
             data = adapter.parse_message(t, *values)
 
             registration = self.endpoint_registry[address]
@@ -121,19 +132,24 @@ class OscService(Generic[T]):
 
         self.dispatcher.map(address, partial(_receive_handler, field, data_type))
 
-    def run(self, blocking: bool = True):
+    def run(self):
         if self.out_port is not None:
             self.osc_client = SimpleUDPClient(self.host, self.out_port, allow_broadcast=self.allow_broadcast)
 
         if self.in_port is not None:
             self.osc_server = ThreadingOSCUDPServer((self.host, self.in_port), self.dispatcher)
+            self.osc_server.serve_forever(poll_interval=self.server_poll_interval)
 
-            if blocking:
-                self.osc_server.serve_forever(poll_interval=self.server_poll_interval)
+    def run_async(self):
+        self.osc_run_thread = Thread(name="osc-run-thread", target=self.run, daemon=True)
+        self.osc_run_thread.start()
 
     def stop(self):
         if self.osc_server is not None:
             self.osc_server.shutdown()
+
+        if self.osc_run_thread is not None:
+            self.osc_run_thread.join(5000)
 
     def api_description(self) -> str:
         logging.warning("This method (api_description) is not meant for production and will change in future releases.")
